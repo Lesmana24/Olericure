@@ -14,6 +14,8 @@ class HomeController extends Controller
         $batasLembab = Setting::where('key', 'batas_lembab')->first()->value ?? 60;
         $jadwalHari = Setting::where('key', 'jadwal_hari')->value('value') ?? '0,0,0,0,0,0,0';
         $jadwalJam  = Setting::where('key', 'jadwal_jam')->value('value') ?? '07:00';
+        $durasiSuhu = Setting::where('key', 'durasi_suhu')->value('value') ?? 3;
+        $durasiJadwal = Setting::where('key', 'durasi_jadwal')->value('value') ?? 5;
 
         $arrayHari = explode(',', $jadwalHari);
 
@@ -22,7 +24,9 @@ class HomeController extends Controller
             'batasSuhu' => $batasSuhu,
             'batasLembab' => $batasLembab,
             'jadwalJam'   => $jadwalJam,
-            'arrayHari'   => $arrayHari
+            'arrayHari'   => $arrayHari,
+            'durasiSuhu' => $durasiSuhu,
+            'durasiJadwal' => $durasiJadwal
         ]);
     }
 

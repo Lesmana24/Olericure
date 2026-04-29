@@ -124,21 +124,40 @@ h1 {
   object-fit: contain;
 }
 
-.status {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  margin: 0 10%;
+.sensor-control-section {
   margin-top: 120px;
+}
+
+.sub-section {
+  margin-top: 50px !important;
+}
+
+.sensor-control-section h3 {
+  color: #45842E;
+  margin-bottom: 15px;
+  font-size: 36px;
+}
+
+.status {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  margin: 0 10%;
+  margin-top: 10px;
   gap: 20px;
+}
+
+.section-divider {
+    border: 0;
+    height: 1px;
+    background: #e8f5e9;
+    margin: 40px auto;
+    width: 80%;
 }
 
 .status-box {
   background-color: #fff;
   border-radius: 15px;
   padding: 30px 20px;
-  flex: 1;
-  min-width: 180px;
   box-shadow: 0 0px 20px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
@@ -415,8 +434,17 @@ h1 {
     height: 65%;
   }
 
-  .status {
+  .sensor-control-section {
     margin-top: 90px;
+  }
+
+  .sensor-control-section h3 {
+    font-size: 24px;
+  }
+
+  .status {
+    margin-top: 10px;
+    grid-template-columns: 1fr;
   }
 
   .status-box {
@@ -590,6 +618,28 @@ h1 {
     font-weight: 600;
 }
 
+/* Tombol Panduan */
+.btn-guide {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #e8f5e9;
+    color: #45842E;
+    border: 1px solid #45842E;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 10px auto 20px auto;
+}
+
+.btn-guide:hover {
+    background-color: #45842E;
+    color: white;
+}
+
 /* CSS Khusus untuk Drawer agar tidak mengganggu home.css lu */
     .custom-backdrop {
         position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -645,30 +695,294 @@ h1 {
    Agar teks tidak bertabrakan dengan logo di layar kecil
 */
 @media (max-width: 480px) {
-    .nav-icons .info, 
-    .nav-icons .notif {
-        width: 36px;
-        padding: 8px; /* Memberi ruang bernapas ke icon agar tidak sesak */
-        display: flex;
-        justify-content: center;
-        align-items: center;
+    /* 1. PERBAIKAN CONTAINER UTAMA (CRITICAL) */
+    body {
+        flex-direction: column; 
+        width: 100%; 
+        overflow-x: hidden;
+        padding: 0;
+        background: #f0fdf4; /* Light green botanical background */
     }
 
-    .realtime-header {
-        padding: 0 15px;
+    h1 {
+        margin-top: 50px; /* Space untuk header */
+        font-size: 28px;
+        text-align: center;
+        width: 100%;
+        margin-bottom: 40px;
+        box-sizing: border-box;
     }
-    
+
+    .card {
+        width: 100%; 
+        border-radius: 32px 32px 0 0; 
+        margin: 0; 
+        padding: 24px 20px; 
+        box-sizing: border-box;
+        box-shadow: 0 -4px 20px rgba(22, 163, 74, 0.08); /* Softer green shadow */
+        min-height: calc(100vh - 150px);
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* 2. PERBAIKAN HEADER & LOGO */
+    .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding: 16px 20px;
+        background: transparent;
+        z-index: 50;
+        display: flex;
+        justify-content: space-between; /* Kiri Kanan */
+        align-items: center;
+        box-sizing: border-box;
+    }
+
+    .nav-icons {
+        display: flex;
+        gap: 12px;
+    }
+
+    .nav-icons .info, 
+    .nav-icons .notif {
+        width: 40px;
+        height: 40px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+
+    .logout {
+        padding: 8px 16px;
+        border-radius: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        border: none;
+        color: #166534;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .logo-circle {
+        margin: 0 auto 24px auto !important; 
+        width: 90px; 
+        height: 90px;
+        position: relative;
+        left: auto !important;
+        transform: none !important;
+        /* Tambahkan Z-Index dan benerin posisinya biar gak numpuk */
+        z-index: 10;
+        display: block; 
+        /* Hapus top, left, transform jika ada */
+        box-shadow: 0 8px 24px rgba(22, 163, 74, 0.15);
+    }
+
+    .mqtt-status-container {
+        margin: 0 auto 32px auto !important; 
+        display: auto !important; 
+        width: fit-content;
+        font-size: 13px;
+        background: white;
+        padding: 8px 20px;
+        border-radius: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        text-align: center;
+    }
+
+    /* 3. PERBAIKAN DATA REALTIME (KEMBALI 2 KOLOM) */
+    .realtime-header {
+        position: relative;
+        height: auto;
+        padding: 0;
+        display: grid; 
+        grid-template-columns: 1fr 1fr; 
+        gap: 16px;
+        margin-bottom: 10px;
+    }
+
     .rt-box {
-        width: auto; /* Biarkan lebar menyesuaikan konten */
+        width: 100%;
+        background: #f0fdf4;
+        border-radius: 24px;
+        padding: 20px 10px;
+        margin-top: 0;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+        box-sizing: border-box;
+        text-align: center;
     }
 
     .rt-box h3 {
-        font-size: 24px; /* Perkecil sedikit di HP */
+        font-size: 28px;
+        color: #166534;
+        margin-bottom: 4px;
     }
-    
+
     .rt-box p {
-        font-size: 10px;
-        max-width: 70px; /* Bungkus teks jika terlalu panjang */
-        line-height: 1.2;
+        font-size: 11px;
+        color: #15803d;
+        margin-top: 0;
+    }
+
+    /* 4. PERBAIKAN CONFIG TILES (1 KOLOM KE BAWAH) */
+    .sensor-control-section {
+        margin-top: 0;
+    }
+
+    .sub-section {
+        margin-top: 32px !important;
+    }
+
+    .sensor-control-section h3, 
+    .schedule h3 {
+        font-size: 20px;
+        text-align: left;
+        margin-bottom: 16px;
+        color: #14532d;
+    }
+
+    .status {
+        margin: 0;
+        display: grid; 
+        grid-template-columns: 1fr; 
+        gap: 16px;
+    }
+
+    .status-box {
+        width: 100%; 
+        box-sizing: border-box;
+        padding: 24px 20px;
+        border-radius: 24px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+        border: 1px solid #f0fdf4;
+        position: relative;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .status-box h2 {
+        font-size: 32px;
+        margin: 0 0 4px 0;
+        color: #166534;
+    }
+
+    .status-box p {
+        font-size: 13px;
+        color: #15803d;
+        margin: 0;
+        font-weight: 500;
+    }
+
+    .icon-action {
+        position: absolute;
+        top: 24px;
+        right: 20px;
+    }
+
+    .settings-icon {
+        width: 24px;
+        height: 24px;
+        fill: #86efac;
+    }
+
+    /* 5. PERBAIKAN JADWAL OTOMATIS */
+    .schedule {
+        width: 100%;
+        margin-top: 0px;
+        box-sizing: border-box;
+    }
+
+    .day-selector {
+        width: 100%; 
+        box-sizing: border-box;
+        display: flex;
+        justify-content: space-between;
+        gap: 4px;
+        background: #f0fdf4;
+        padding: 6px;
+        border-radius: 16px;
+        margin-bottom: 24px;
+    }
+
+    .day-item {
+        position: relative;
+        flex: 1;
+        margin: 0;
+        font-size: 0;
+    }
+
+    .day-item input[type="checkbox"] {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        z-index: 2;
+    }
+
+    .day-item::after {
+        content: "Min";
+        display: block;
+        text-align: center;
+        font-size: 12px;
+        font-weight: 600;
+        color: #166534;
+        padding: 12px 0;
+        border-radius: 12px;
+        transition: 0.2s ease;
+        position: relative;
+        z-index: 1;
+    }
+    .day-item:nth-child(2)::after { content: "Sen"; }
+    .day-item:nth-child(3)::after { content: "Sel"; }
+    .day-item:nth-child(4)::after { content: "Rab"; }
+    .day-item:nth-child(5)::after { content: "Kam"; }
+    .day-item:nth-child(6)::after { content: "Jum"; }
+    .day-item:nth-child(7)::after { content: "Sab"; }
+
+    .day-item:has(input:checked)::after {
+        background: #16a34a;
+        color: white;
+        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+    }
+
+    .time-container {
+        width: 100%; 
+        box-sizing: border-box;
+        margin: 0 0 24px 0;
+    }
+
+    #customTime {
+        width: 100%; 
+        box-sizing: border-box;
+        font-size: 24px;
+        padding: 16px;
+        border-radius: 20px;
+        border: 2px solid #dcfce7;
+        background: #f8fafc;
+        color: #166534;
+        text-align: center;
+        font-weight: bold;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    }
+
+    .time-icon {
+        display: none;
+    }
+
+    .btn-set {
+        width: 100%;
+        margin: 0;
+        padding: 18px;
+        border-radius: 20px;
+        font-size: 16px;
+        background: #16a34a;
+        box-shadow: 0 8px 24px rgba(22, 163, 74, 0.25);
+        font-weight: bold;
+    }
+
+    .leaf.left, .leaf.right {
+        opacity: 0.15;
+        z-index: -1;
     }
 }
