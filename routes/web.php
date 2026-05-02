@@ -16,13 +16,15 @@ Route::get('/', function () {
     return view('konten.welcome', compact('title', 'slug'));
 });
 
-// Middleware 'guest' mencegah user yang SUDAH login balik lagi ke halaman form login/daftar
+// Middleware 'guest' mencegah user yang SUDAH login balik lagi ke form
 Route::middleware('guest:pengguna')->group(function () {
     Route::get('/daftar', [PenggunaController::class, 'create'])->name('daftar');
-    Route::post('/daftar', [PenggunaController::class, 'store']);
+    // Limit Daftar: Maksimal 5x coba dalam 1 menit (Cegah spam akun)
+    Route::post('/daftar', [PenggunaController::class, 'store'])->middleware('throttle:5,1');
 
     Route::get('/login',  [LoginController::class, 'create'])->name('login');
-    Route::post('/login', [LoginController::class, 'store']);
+    // Limit Login: Maksimal 5x coba dalam 1 menit (Cegah Brute Force)
+    Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:5,1');
 });
 
 // ==========================================
@@ -33,7 +35,11 @@ Route::middleware('auth:pengguna')->group(function () {
     // Akses Akun & Homepage
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
     Route::get('/home', [HomeController::class, 'index'])->name('home');
-    Route::post('/update-setting', [HomeController::class, 'updateSettings'])->name('update.setting');
+    
+    // Limit Update Setting: Maksimal 30x dalam 1 menit (Cegah ESP32 nge-hang karena dispam MQTT)
+    Route::post('/update-setting', [HomeController::class, 'updateSettings'])
+        ->name('update.setting')
+        ->middleware('throttle:30,1');
 
     // Notifikasi
     Route::get('/notification', [NotificationController::class, 'index']);
@@ -44,7 +50,11 @@ Route::middleware('auth:pengguna')->group(function () {
     // FITUR UTAMA AI (Semuanya Wajib Login!)
     // ------------------------------------------
     Route::get('/ai', [PlantScanController::class, 'index'])->name('ai.index');
-    Route::post('/ai/upload', [PlantScanController::class, 'upload'])->name('ai.upload');
+    
+    // Limit Upload Gambar: Maksimal 10x dalam 1 menit (Cegah server penuh)
+    Route::post('/ai/upload', [PlantScanController::class, 'upload'])
+        ->name('ai.upload')
+        ->middleware('throttle:10,1');
     
     // Alur Hasil Deteksi
     Route::get('/ai/result/preview', [PlantScanController::class, 'preview'])->name('ai.preview');
@@ -55,7 +65,9 @@ Route::middleware('auth:pengguna')->group(function () {
     // Hapus Riwayat Deteksi
     Route::delete('/ai/history/{id}', [PlantScanController::class, 'destroy'])->name('ai.history.destroy');
 
-    // Chatbot Integrasi Gemini
-    Route::post('/api/chat-botanist', [PlantScanController::class, 'chatBotanist'])->name('ai.chat');
+    // Limit Chatbot Gemini: Maksimal 15 request dalam 1 menit (Amankan kuota API lu!)
+    Route::post('/api/chat-botanist', [PlantScanController::class, 'chatBotanist'])
+        ->name('ai.chat')
+        ->middleware('throttle:15,1');
 
 });

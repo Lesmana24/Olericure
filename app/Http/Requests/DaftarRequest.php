@@ -33,7 +33,6 @@ class DaftarRequest extends FormRequest
             'nama.required'     => 'Nama wajib diisi.',
             'nama.string'       => 'Nama harus berupa teks.',
             'nama.max'          => 'Nama maksimal 100 karakter.',
-            'nama.required'     => 'Nama wajib diisi.',
             'password.required' => 'Password wajib diisi.',
             'password.min'      => 'Password minimal 4 karakter.',
         ];

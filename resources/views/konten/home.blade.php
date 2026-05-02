@@ -299,10 +299,10 @@
     // --- 1. Konfigurasi Koneksi ---
     const mqtt_broker = "broker.emqx.io";
     const mqtt_port   = 8084;
-    const client_id   = "Web_PakJondol_" + Math.random().toString(16).substr(2, 8);
+    const client_id   = "Web_AgroSquad_" + Math.random().toString(16).substr(2, 8);
 
-    const topic_suhu   = "Proyek2/monitoring/suhu";
-    const topic_lembab = "Proyek2/monitoring/lembab";
+    const topic_suhu   = "AgroSquad/monitoring/suhu";
+    const topic_lembab = "AgroSquad/monitoring/lembab";
 
     // VARIABEL TIMER (Wajib di luar fungsi)
     let watchdogTimer = null;
@@ -342,25 +342,25 @@
 
         if(dbSuhu) {
             let msg = new Paho.MQTT.Message(dbSuhu);
-            msg.destinationName = "Proyek2/kontrol/batas_suhu";
+            msg.destinationName = "AgroSquad/kontrol/batas_suhu";
             msg.retained = true;
             client.send(msg);
         }
         if(dbLembab) {
             let msg = new Paho.MQTT.Message(dbLembab);
-            msg.destinationName = "Proyek2/kontrol/batas_lembab";
+            msg.destinationName = "AgroSquad/kontrol/batas_lembab";
             msg.retained = true;
             client.send(msg);
         }
         if(dbDurasiSuhu) {
             let msg = new Paho.MQTT.Message(dbDurasiSuhu);
-            msg.destinationName = "Proyek2/kontrol/durasi_suhu";
+            msg.destinationName = "AgroSquad/kontrol/durasi_suhu";
             msg.retained = true;
             client.send(msg);
         }
         if(dbDurasiJadwal) {
             let msg = new Paho.MQTT.Message(dbDurasiJadwal);
-            msg.destinationName = "Proyek2/kontrol/durasi_jadwal";
+            msg.destinationName = "AgroSquad/kontrol/durasi_jadwal";
             msg.retained = true;
             client.send(msg);
         }
@@ -488,19 +488,19 @@
 
         if(window.currentType === 'Suhu') {
             document.getElementById('display-suhu').innerText = window.currentValue + '°';
-            topic = "Proyek2/kontrol/batas_suhu";
+            topic = "AgroSquad/kontrol/batas_suhu";
             dbKey = "batas_suhu"; // Sesuai database
         } else if(window.currentType === 'Kelembapan') {
             document.getElementById('display-kelembapan').innerText = window.currentValue + '%';
-            topic = "Proyek2/kontrol/batas_lembab";
+            topic = "AgroSquad/kontrol/batas_lembab";
             dbKey = "batas_lembab"; // Sesuai database
         } else if(window.currentType === 'Durasi Suhu') {
             document.getElementById('display-durasi-suhu').innerText = window.currentValue + 's';
-            topic = "Proyek2/kontrol/durasi_suhu";
+            topic = "AgroSquad/kontrol/durasi_suhu";
             dbKey = "durasi_suhu"; // Sesuai database
         } else if(window.currentType === 'Durasi Jadwal') {
             document.getElementById('display-durasi-jadwal').innerText = window.currentValue + 's';
-            topic = "Proyek2/kontrol/durasi_jadwal";
+            topic = "AgroSquad/kontrol/durasi_jadwal";
             dbKey = "durasi_jadwal"; // Sesuai database
         }
 
@@ -566,7 +566,7 @@
         // 4. Susun Format Pesan: "0,1,0,1,0,0,0#08:00"
         let stringHari = polaHari.join(",");
         let payload = stringHari + "#" + waktu;
-        let topicJadwal = "Proyek2/kontrol/jadwal_mingguan";
+        let topicJadwal = "AgroSquad/kontrol/jadwal_mingguan";
 
         // 5. Kirim ke MQTT
         var message = new Paho.MQTT.Message(payload);
