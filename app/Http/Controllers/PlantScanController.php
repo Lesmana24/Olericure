@@ -12,9 +12,10 @@ use Illuminate\Support\Facades\Http;
 class PlantScanController extends Controller
 {
     const INFO_UNAVAILABLE = 'Informasi belum tersedia.';
+    const API_ROUTE_PATTERN = 'api/*';
     public function index()
     {
-        $historyScans = PlantHealthScan::where('user_id', Auth::guard('pengguna')->id())
+        $historyScans = PlantHealthScan::query()->where('user_id', Auth::guard('pengguna')->id())
             ->latest()
             ->get();
 
@@ -51,17 +52,7 @@ class PlantScanController extends Controller
                     $nama_penyakit = $hasil_ai['penyakit'] ?? null;
                     $akurasi = $hasil_ai['akurasi'] ?? 0;
 
-                    // Logic simpel: Kalau nama penyakitnya ada kata 'healthy', 'sehat', 'tidak ada', atau null/kosong, berarti sehat.
-                    $penyakit_lower = strtolower($nama_penyakit);
-                    if (empty($nama_penyakit) ||
-                        str_contains($penyakit_lower, 'healthy') ||
-                        str_contains($penyakit_lower, 'sehat') ||
-                        str_contains($penyakit_lower, 'tidak ada')
-                    ) {
-                        $status_kesehatan = 'healthy';
-                    } else {
-                        $status_kesehatan = 'infected';
-                    }
+                    $status_kesehatan = $this->determineHealthStatus($nama_penyakit);
 
                     // Integrasi ke Groq API (Llama 3) untuk Panduan Perawatan secara sekuensial
                     $groqData = $this->getPlantCareFromGroq($nama_tanaman, $nama_penyakit);
@@ -79,12 +70,31 @@ class PlantScanController extends Controller
                         'problems_list' => $groqData['problems_list'] ?? [],
                     ]]);
 
-                    // Kembalikan response sukses ke frontend (AJAX/Fetch)
-                    $responseData = [
-                        'message' => 'Analisis AI selesai! Memuat pratinjau...',
-                        'status' => 'success',
-                        'redirect_url' => route('ai.preview')
-                    ];
+                    // Pengecekan apakah request dari API (Flutter) atau Web
+                    if ($request->expectsJson() || $request->is(self::API_ROUTE_PATTERN)) {
+                        $responseData = [
+                            'message' => 'Analisis AI selesai!',
+                            'status' => 'success',
+                            'data' => [
+                                'image_path' => $path,
+                                'plant_name' => $nama_tanaman,
+                                'disease_name' => $nama_penyakit,
+                                'ai_health_status' => $status_kesehatan,
+                                'confidence_score' => $akurasi,
+                                'care_light' => $groqData['care_light'] ?? self::INFO_UNAVAILABLE,
+                                'care_water' => $groqData['care_water'] ?? self::INFO_UNAVAILABLE,
+                                'care_temperature' => $groqData['care_temperature'] ?? self::INFO_UNAVAILABLE,
+                                'problems_list' => $groqData['problems_list'] ?? [],
+                            ]
+                        ];
+                    } else {
+                        // Kembalikan response sukses ke frontend web (AJAX/Fetch)
+                        $responseData = [
+                            'message' => 'Analisis AI selesai! Memuat pratinjau...',
+                            'status' => 'success',
+                            'redirect_url' => route('ai.preview')
+                        ];
+                    }
                     $statusCode = 200;
                 } else {
                     Storage::disk('public')->delete($path);
@@ -130,6 +140,59 @@ class PlantScanController extends Controller
      * Memindahkan temp file dan insert permanen ke database
      */
     public function storeReport(Request $request)
+    {
+        if ($request->expectsJson() || $request->is(self::API_ROUTE_PATTERN)) {
+            return $this->handleApiStoreReport($request);
+        }
+
+        return $this->handleWebStoreReport();
+    }
+
+    /**
+     * Handle stateless API store report
+     */
+    private function handleApiStoreReport(Request $request)
+    {
+        $data = $request->all();
+        
+        $userId = $request->user() ? $request->user()->id : null;
+        
+        $oldPath = $data['image_path'] ?? '';
+        if (!empty($oldPath) && Storage::disk('public')->exists($oldPath)) {
+            $newPath = 'plant_scans/' . basename($oldPath);
+            Storage::disk('public')->move($oldPath, $newPath);
+        } else {
+            $newPath = 'plant_scans/default.jpg';
+        }
+        
+        $problemsList = null;
+        if (isset($data['problems_list'])) {
+            $problemsList = is_array($data['problems_list']) ? $data['problems_list'] : json_decode($data['problems_list'], true);
+        }
+        
+        PlantHealthScan::create([
+            'user_id' => $userId,
+            'image_path' => $newPath,
+            'ai_health_status' => $data['ai_health_status'] ?? null,
+            'disease_name' => $data['disease_name'] ?? null,
+            'confidence_score' => $data['confidence_score'] ?? 0,
+            'plant_name' => $data['plant_name'] ?? null,
+            'care_light' => $data['care_light'] ?? null,
+            'care_water' => $data['care_water'] ?? null,
+            'care_temperature' => $data['care_temperature'] ?? null,
+            'problems_list' => $problemsList,
+        ]);
+
+        return response()->json([
+            'message' => 'Laporan berhasil disimpan!',
+            'status' => 'success'
+        ], 200);
+    }
+
+    /**
+     * Handle stateful Web session store report
+     */
+    private function handleWebStoreReport()
     {
         $tempScan = session('temp_ai_scan');
 
@@ -187,7 +250,7 @@ class PlantScanController extends Controller
     /**
      * Menampilkan halaman hasil diagnosis AI yang sudah di-save
      */
-    public function result($id)
+    public function result(int|string $id)
     {
         $scanResult = PlantHealthScan::with('chatHistories')->findOrFail($id);
 
@@ -202,9 +265,25 @@ class PlantScanController extends Controller
     }
 
     /**
+     * Menentukan status kesehatan tanaman berdasarkan nama penyakit
+     */
+    private function determineHealthStatus(?string $diseaseName): string
+    {
+        $penyakitLower = strtolower((string) $diseaseName);
+        if (empty($diseaseName) ||
+            str_contains($penyakitLower, 'healthy') ||
+            str_contains($penyakitLower, 'sehat') ||
+            str_contains($penyakitLower, 'tidak ada')
+        ) {
+            return 'healthy';
+        }
+        return 'infected';
+    }
+
+    /**
      * Memanggil Groq API (Llama 3) untuk generate panduan perawatan (JSON Mode)
      */
-    private function getPlantCareFromGroq($plantName, $diseaseName)
+    private function getPlantCareFromGroq(string $plantName, ?string $diseaseName)
     {
         $apiKey = env('GROQ_API_KEY');
         if (!$apiKey) {
@@ -365,10 +444,16 @@ STRICT GUARDRAILS: Kewajiban Mutlak: Anda HANYA diizinkan menjawab pertanyaan se
     /**
      * Menghapus riwayat scan secara spesifik dari AJAX
      */
-    public function destroy($id)
+    public function destroy(Request $request, int|string $id)
     {
-        $scan = PlantHealthScan::where('id', $id)
-            ->where('user_id', Auth::guard('pengguna')->id())
+        // Tentukan user ID berdasarkan dari mana request berasal (API Sanctum atau Web)
+        $isApi = $request->expectsJson() || $request->is(self::API_ROUTE_PATTERN);
+        $userId = $isApi ? Auth::guard('sanctum')->id() : Auth::guard('pengguna')->id();
+
+        /** @var \App\Models\PlantHealthScan $scan */
+        $scan = PlantHealthScan::query()
+            ->where('id', $id)
+            ->where('user_id', $userId)
             ->first();
 
         if (!$scan) {
@@ -384,11 +469,27 @@ STRICT GUARDRAILS: Kewajiban Mutlak: Anda HANYA diizinkan menjawab pertanyaan se
         }
 
         // Hapus record dari database
-        $scan->delete();
+        PlantHealthScan::destroy($scan->id);
 
         return response()->json([
             'status' => 'success',
             'message' => 'Riwayat berhasil dihapus.'
-        ]);
+        ], 200);
+    }
+
+
+    /**
+     * API: Mengambil riwayat scan untuk aplikasi mobile (Flutter)
+     */
+    public function historyApi(Request $request)
+    {
+        $history = PlantHealthScan::query()->where('user_id', Auth::guard('sanctum')->id())
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $history
+        ], 200);
     }
 }

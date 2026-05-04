@@ -96,7 +96,7 @@
     </div>
     
     <!-- History Drawer -->
-    <div x-show="historyOpen" 
+    <div x-show="historyOpen"
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0 translate-x-full"
          x-transition:enter-end="opacity-100 translate-x-0"
@@ -112,7 +112,10 @@
                 <svg class="w-6 h-6 text-[#4C732E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <h3 class="text-xl font-bold text-gray-800">Riwayat Deteksi</h3>
+                <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                    Riwayat Deteksi
+                    <i id="btn-refresh-history" class="fas fa-sync-alt text-[#4C732E] text-[0.85rem] cursor-pointer hover:text-green-700 hover:rotate-180 transition-transform duration-500" title="Refresh Riwayat"></i>
+                </h3>
             </div>
             <button @click="historyOpen = false" class="p-2 bg-white rounded-full text-gray-400 hover:text-gray-600 shadow-sm border border-gray-100 transition">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -122,7 +125,7 @@
         </div>
 
         <!-- History List -->
-        <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50 pb-20">
+        <div id="history-list-container" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50 pb-20">
             @forelse($historyScans as $scan)
             <a href="{{ route('ai.result', $scan->id) }}" id="history-card-{{ $scan->id }}" class="relative block w-full bg-white border border-gray-100 p-4 rounded-xl shadow-sm hover:shadow-md hover:border-[#4C732E]/30 transition group flex flex-col gap-3">
                 <button onclick="deleteHistory(event, {{ $scan->id }})" class="absolute top-2 right-2 p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg md:opacity-0 group-hover:opacity-100 transition-all z-10 focus:opacity-100" title="Hapus Riwayat">
@@ -399,7 +402,7 @@
                 .then(async response => {
                     const data = await response.json().catch(() => null);
                     if (!response.ok) {
-                        // Lempar ke catch block dengan pesan error agar mudah debug 
+                        // Lempar ke catch block dengan pesan error agar mudah debug
                         throw new Error((data && data.message) ? data.message : `HTTP Error ${response.status}`);
                     }
                     return data;
@@ -429,7 +432,7 @@
                     closeDeleteModal();
                     // Restore icon awal jika gagal
                     if (btn) {
-                        btn.innerHTML = cachedHtml; 
+                        btn.innerHTML = cachedHtml;
                         btn.disabled = false;
                     }
                 })
@@ -437,6 +440,44 @@
                     confirmBtn.innerHTML = originalConfirmContent;
                     confirmBtn.disabled = false;
                 });
+            });
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnRefresh = document.getElementById('btn-refresh-history');
+        
+        if (btnRefresh) {
+            btnRefresh.addEventListener('click', function() {
+                const container = document.getElementById('history-list-container');
+                if (!container) return;
+
+                // Tambahkan class berputar bawaan FontAwesome
+                btnRefresh.classList.add('fa-spin');
+                
+                // Fetch ulang halaman saat ini (secara background)
+                fetch(window.location.href)
+                    .then(response => response.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        const newContainer = doc.getElementById('history-list-container');
+                        
+                        // Timpa isi HTML yang ada dengan yang baru diambil
+                        if (newContainer) {
+                            container.innerHTML = newContainer.innerHTML;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error saat refresh riwayat:', error);
+                    })
+                    .finally(() => {
+                        // Matikan putaran icon setelah proses selesai
+                        // Memberikan sedikit delay 500ms agar efek loading terasa
+                        setTimeout(() => {
+                            btnRefresh.classList.remove('fa-spin');
+                        }, 500);
+                    });
             });
         }
     });

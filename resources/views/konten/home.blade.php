@@ -145,6 +145,26 @@
     <img class="leaf right" src="{{ asset('image/pohon2.png') }}" alt="leaf" />
 </div>
 
+{{-- Custom Toast Notification --}}
+<div id="customToast" class="custom-toast">
+    <div class="toast-icon" id="toastIcon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+    </div>
+    <div class="toast-content">
+        <span class="toast-title" id="toastTitle">Berhasil</span>
+        <span class="toast-message" id="toastMessage">Data berhasil disimpan!</span>
+    </div>
+    <button class="toast-close" onclick="hideToast()" aria-label="Tutup notifikasi">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+    </button>
+    <div class="toast-progress" id="toastProgress"></div>
+</div>
+
 <div id="thresholdModal" class="modal-overlay" style="display: none;">
     <div class="modal-card">
         <div class="modal-header">
@@ -292,9 +312,6 @@
 {{-- ================= SCRIPT MQTT (PAHO) ================= --}}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
 
-{{-- ================= SCRIPT MQTT (PAHO) ================= --}}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
-
 <script>
     // --- 1. Konfigurasi Koneksi ---
     const mqtt_broker = "broker.emqx.io";
@@ -329,9 +346,12 @@
         document.getElementById("mqtt-status").innerText = "Menunggu Data Alat...";
         document.getElementById("mqtt-status").style.color = "orange";
 
-        // Subscribe
+        // Subscribe ke topik sensor
         client.subscribe(topic_suhu);
         client.subscribe(topic_lembab);
+
+        // Subscribe ke topik kontrol (agar sinkron real-time dengan Mobile)
+        client.subscribe("AgroSquad/kontrol/#");
 
         let dbSuhu = document.getElementById("display-suhu").innerText.replace('°', '');
         let dbLembab = document.getElementById("display-kelembapan").innerText.replace('%', '');
@@ -364,6 +384,22 @@
             msg.retained = true;
             client.send(msg);
         }
+
+        // Sinkronisasi Jadwal Mingguan (agar retained lama di broker ter-overwrite)
+        let hariArr = [];
+        for (let i = 0; i <= 6; i++) {
+            let cb = document.getElementById("hari-" + i);
+            hariArr.push(cb && cb.checked ? "1" : "0");
+        }
+        let dbJam = document.getElementById("customTime").value || "00:00";
+        let jadwalPayload = hariArr.join(",") + "#" + dbJam;
+
+        let msgJadwal = new Paho.MQTT.Message(jadwalPayload);
+        msgJadwal.destinationName = "AgroSquad/kontrol/jadwal_mingguan";
+        msgJadwal.retained = true;
+        client.send(msgJadwal);
+
+        console.log("Sinkronisasi Jadwal: " + jadwalPayload);
     }
 
     function onFailure(responseObject) {
@@ -387,12 +423,44 @@
         // 1. PANGGIL FUNGSI DETEKSI ONLINE (Reset Timer)
         resetWatchdog();
 
-        // 2. Update Tampilan Angka
+        // 2. Update Tampilan Angka (Sensor dari ESP32)
         if (message.destinationName === topic_suhu) {
             document.getElementById("live-suhu").innerText = message.payloadString;
         }
         else if (message.destinationName === topic_lembab) {
             document.getElementById("live-lembab").innerText = message.payloadString;
+        }
+
+        // 3. Sinkronisasi Kontrol dari Mobile (Real-time)
+        else if (message.destinationName === "AgroSquad/kontrol/batas_suhu") {
+            document.getElementById("display-suhu").innerText = message.payloadString + "°";
+        }
+        else if (message.destinationName === "AgroSquad/kontrol/batas_lembab") {
+            document.getElementById("display-kelembapan").innerText = message.payloadString + "%";
+        }
+        else if (message.destinationName === "AgroSquad/kontrol/durasi_suhu") {
+            document.getElementById("display-durasi-suhu").innerText = message.payloadString + "s";
+        }
+        else if (message.destinationName === "AgroSquad/kontrol/durasi_jadwal") {
+            document.getElementById("display-durasi-jadwal").innerText = message.payloadString + "s";
+        }
+
+        // 4. Sinkronisasi Jadwal Mingguan dari Mobile
+        else if (message.destinationName === "AgroSquad/kontrol/jadwal_mingguan") {
+            // Payload format: "1,1,0,0,0,0,0#15:30"
+            let parts = message.payloadString.split("#");
+            let jamBaru = parts[1];   // "15:30"
+            let arrayHari = parts[0].split(","); // ["1","1","0","0","0","0","0"]
+
+            // Update input waktu
+            document.getElementById("customTime").value = jamBaru;
+
+            // Update checkbox hari (id: hari-0 s/d hari-6)
+            for (let i = 0; i <= 6; i++) {
+                document.getElementById("hari-" + i).checked = (arrayHari[i] === "1");
+            }
+
+            console.log("Jadwal disinkronkan dari Mobile: " + message.payloadString);
         }
     }
 
@@ -540,28 +608,28 @@
     window.kirimJadwal = function() {
         // 1. Validasi Koneksi
         if (!client.isConnected()) {
-            alert("MQTT belum terhubung! Tunggu sebentar...");
+            showToast("Koneksi Terputus", "MQTT belum terhubung! Tunggu sebentar...", "warning");
             return;
         }
 
-        // 2. Ambil Jam dari Input
-        var waktu = document.getElementById("customTime").value;
-        if (waktu === "") { alert("Pilih jam dulu!"); return; }
-
-        // 3. Ambil Status Centang Hari (Minggu=0 s.d Sabtu=6)
-        // Kita buat array, misal: ["0", "1", "0", "1", "0", "0", "0"]
+        // 2. Ambil Status Centang Hari (Minggu=0 s.d Sabtu=6)
         let polaHari = [];
         let adaHariDipilih = false;
         for (let i = 0; i <= 6; i++) {
             let isChecked = document.getElementById("hari-" + i).checked;
-            if(isChecked) adaHariDipilih = true;
+            if (isChecked) adaHariDipilih = true;
             polaHari.push(isChecked ? "1" : "0");
         }
 
-        if (!adaHariDipilih) {
-            alert("Silakan pilih minimal satu hari!");
+        // 3. Ambil Jam (wajib hanya jika ada hari yang dipilih)
+        var waktu = document.getElementById("customTime").value;
+        if (adaHariDipilih && waktu === "") {
+            showToast("Waktu Kosong", "Silakan pilih jam terlebih dahulu!", "warning");
             return;
         }
+
+        // Jika tidak ada hari dipilih, kirim jam kosong
+        if (!adaHariDipilih) waktu = waktu || "00:00";
 
         // 4. Susun Format Pesan: "0,1,0,1,0,0,0#08:00"
         let stringHari = polaHari.join(",");
@@ -571,20 +639,22 @@
         // 5. Kirim ke MQTT
         var message = new Paho.MQTT.Message(payload);
         message.destinationName = topicJadwal;
-        message.qos = 2;       // Wajib sampai
-        message.retained = true; // Simpan di broker
+        message.qos = 2;
+        message.retained = true;
         client.send(message);
 
-        // 5. KIRIM KE DATABASE (SERVER) - BARU!!
-        // Kita simpan dua kali: satu untuk pola hari, satu untuk jam
+        // 6. KIRIM KE DATABASE (SERVER)
         simpanKeDB('jadwal_hari', stringHari);
         simpanKeDB('jadwal_jam', waktu);
 
         console.log("Mengirim Jadwal: " + payload);
-        alert("Jadwal Berhasil Disimpan: " + waktu);
 
-        // Catatan: Jika ingin disimpan ke Database Laravel juga,
-        // tambahkan kode fetch() di sini mirip fungsi saveThreshold.
+        // 7. Toast sesuai konteks
+        if (adaHariDipilih) {
+            showToast("Jadwal Tersimpan", "Jadwal penyiraman aktif pukul " + waktu, "success");
+        } else {
+            showToast("Jadwal Dinonaktifkan", "Jadwal otomatis telah dimatikan", "warning");
+        }
     };
 
     function simpanKeDB(keyName, valueData) {
@@ -602,6 +672,47 @@
         .then(res => res.json())
         .then(data => console.log("Saved " + keyName + ":", data))
         .catch(err => console.error("Error saving " + keyName, err));
+    }
+
+    // --- CUSTOM TOAST FUNCTIONS ---
+    let toastTimeout = null;
+
+    const toastIcons = {
+        success: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+        warning: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+        error: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'
+    };
+
+    function showToast(title, message, type = "success") {
+        const toast = document.getElementById("customToast");
+        const progress = document.getElementById("toastProgress");
+
+        // Set content
+        document.getElementById("toastTitle").textContent = title;
+        document.getElementById("toastMessage").textContent = message;
+        document.getElementById("toastIcon").innerHTML = toastIcons[type] || toastIcons.success;
+
+        // Set type class
+        toast.className = "custom-toast";
+        if (type === "warning") toast.classList.add("toast-warning");
+        if (type === "error") toast.classList.add("toast-error");
+
+        // Reset progress bar animation
+        progress.style.animation = "none";
+        void progress.offsetHeight; // Force reflow
+        progress.style.animation = "toastTimer 3.5s linear forwards";
+
+        // Show
+        toast.classList.add("show");
+
+        // Auto hide after 3.5s
+        if (toastTimeout) clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => hideToast(), 3500);
+    }
+
+    function hideToast() {
+        document.getElementById("customToast").classList.remove("show");
+        if (toastTimeout) clearTimeout(toastTimeout);
     }
     // Event Listener tutup modal
     window.onclick = function(event) {

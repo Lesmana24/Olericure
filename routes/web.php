@@ -44,7 +44,6 @@ Route::middleware('auth:pengguna')->group(function () {
     // Notifikasi
     Route::get('/notification', [NotificationController::class, 'index']);
     Route::delete('/notification/clear', [NotificationController::class, 'deleteAll'])->name('notification.clear');
-    Route::post('/simpan-notif', [NotificationController::class, 'storeLog']);
 
     // ------------------------------------------
     // FITUR UTAMA AI (Semuanya Wajib Login!)
@@ -65,7 +64,7 @@ Route::middleware('auth:pengguna')->group(function () {
     // Hapus Riwayat Deteksi
     Route::delete('/ai/history/{id}', [PlantScanController::class, 'destroy'])->name('ai.history.destroy');
 
-    // Limit Chatbot Gemini: Maksimal 15 request dalam 1 menit (Amankan kuota API lu!)
+    // Limit Maksimal 15 request dalam 1 menit (Amankan kuota API lu!)
     Route::post('/api/chat-botanist', [PlantScanController::class, 'chatBotanist'])
         ->name('ai.chat')
         ->middleware('throttle:15,1');
