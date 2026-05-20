@@ -114,7 +114,9 @@
                 </svg>
                 <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
                     Riwayat Deteksi
-                    <i id="btn-refresh-history" class="fas fa-sync-alt text-[#4C732E] text-[0.85rem] cursor-pointer hover:text-green-700 hover:rotate-180 transition-transform duration-500" title="Refresh Riwayat"></i>
+                    <svg id="btn-refresh-history" class="w-5 h-5 text-[#4C732E] cursor-pointer hover:text-green-700 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" title="Refresh Riwayat">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
                 </h3>
             </div>
             <button @click="historyOpen = false" class="p-2 bg-white rounded-full text-gray-400 hover:text-gray-600 shadow-sm border border-gray-100 transition">
@@ -452,8 +454,8 @@
                 const container = document.getElementById('history-list-container');
                 if (!container) return;
 
-                // Tambahkan class berputar bawaan FontAwesome
-                btnRefresh.classList.add('fa-spin');
+                // Tambahkan class berputar Tailwind
+                btnRefresh.classList.add('animate-spin');
                 
                 // Fetch ulang halaman saat ini (secara background)
                 fetch(window.location.href)
@@ -475,7 +477,7 @@
                         // Matikan putaran icon setelah proses selesai
                         // Memberikan sedikit delay 500ms agar efek loading terasa
                         setTimeout(() => {
-                            btnRefresh.classList.remove('fa-spin');
+                            btnRefresh.classList.remove('animate-spin');
                         }, 500);
                     });
             });

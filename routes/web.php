@@ -64,7 +64,7 @@ Route::middleware('auth:pengguna')->group(function () {
     // Hapus Riwayat Deteksi
     Route::delete('/ai/history/{id}', [PlantScanController::class, 'destroy'])->name('ai.history.destroy');
 
-    // Limit Maksimal 15 request dalam 1 menit (Amankan kuota API lu!)
+    // Limit Maksimal 15 request dalam 1 menit
     Route::post('/api/chat-botanist', [PlantScanController::class, 'chatBotanist'])
         ->name('ai.chat')
         ->middleware('throttle:15,1');

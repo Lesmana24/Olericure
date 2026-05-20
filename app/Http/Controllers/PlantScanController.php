@@ -40,10 +40,10 @@ class PlantScanController extends Controller
             $path = $file->storeAs('temp', $filename, 'public');
 
             try {
-                // JEMBATAN API: Tembak foto ke server Python FastAPI
-                $response = Http::attach(
+                // JEMBATAN API: Tembak foto ke server Python FastAPI (Hugging Face)
+                $response = Http::withoutVerifying()->timeout(60)->attach(
                     'file', file_get_contents($file), $file->getClientOriginalName()
-                )->post('http://127.0.0.1:8001/diagnosa');
+                )->post('https://lesmana24-agrosquad-ai.hf.space/diagnosa');
 
                 if ($response->successful()) {
                     $hasil_ai = $response->json();
@@ -98,18 +98,22 @@ class PlantScanController extends Controller
                     $statusCode = 200;
                 } else {
                     Storage::disk('public')->delete($path);
+                    \Illuminate\Support\Facades\Log::error('Hugging Face Error: ' . $response->body());
                     $responseData = [
-                        'message' => 'Gagal mendapatkan respon dari AI.',
-                        'status' => 'error'
+                        'message' => 'Gagal mendapatkan respon dari AI. (Kode: ' . $response->status() . ')',
+                        'status' => 'error',
+                        'hf_status_code' => $response->status()
                     ];
-                    $statusCode = 500;
+                    $statusCode = $response->status(); // Kembalikan status HTTP asli dari Hugging Face
                 }
 
             } catch (\Exception $e) {
                 Storage::disk('public')->delete($path);
+                \Illuminate\Support\Facades\Log::error("Hugging Face API Exception: " . $e->getMessage());
                 $responseData = [
-                        'message' => 'Server AI sedang offline. Pastikan uvicorn sudah menyala!',
-                        'status' => 'error'
+                        'message' => 'Koneksi ke server AI gagal atau timeout. Silakan coba beberapa saat lagi.',
+                        'status' => 'error',
+                        'error_detail' => $e->getMessage()
                     ];
                 $statusCode = 500;
             }
@@ -447,7 +451,7 @@ STRICT GUARDRAILS: Kewajiban Mutlak: Anda HANYA diizinkan menjawab pertanyaan se
     public function destroy(Request $request, int|string $id)
     {
         // Tentukan user ID berdasarkan dari mana request berasal (API Sanctum atau Web)
-        $isApi = $request->expectsJson() || $request->is(self::API_ROUTE_PATTERN);
+        $isApi = $request->is(self::API_ROUTE_PATTERN);
         $userId = $isApi ? Auth::guard('sanctum')->id() : Auth::guard('pengguna')->id();
 
         /** @var \App\Models\PlantHealthScan $scan */
