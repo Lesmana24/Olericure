@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Arahkan request aset (css/js/gambar) ke folder public jika file-nya ada
+    RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -f
+    RewriteRule ^(.*)$ public/$1 [L]
+
+    # Arahkan semua routing Laravel (dan request lainnya) ke index.php di root
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php [L]
+</IfModule>
