@@ -26,6 +26,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/mobile-chat', [PlantScanController::class, 'chatBotanist']);
     Route::get('/ai/history', [PlantScanController::class, 'historyApi']);
     Route::delete('/ai/history/{id}', [PlantScanController::class, 'destroy']);
+    Route::get('/ai/chats/{scanId}', [PlantScanController::class, 'getChatHistory']);
 
 });
 Route::post('/simpan-notif', [NotificationController::class, 'storeLog']);

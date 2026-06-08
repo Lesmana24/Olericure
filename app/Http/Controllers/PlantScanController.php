@@ -174,7 +174,7 @@ class PlantScanController extends Controller
             $problemsList = is_array($data['problems_list']) ? $data['problems_list'] : json_decode($data['problems_list'], true);
         }
         
-        PlantHealthScan::create([
+        $scan = PlantHealthScan::create([
             'user_id' => $userId,
             'image_path' => $newPath,
             'ai_health_status' => $data['ai_health_status'] ?? null,
@@ -189,7 +189,8 @@ class PlantScanController extends Controller
 
         return response()->json([
             'message' => 'Laporan berhasil disimpan!',
-            'status' => 'success'
+            'status' => 'success',
+            'id' => $scan->id
         ], 200);
     }
 
@@ -494,6 +495,35 @@ STRICT GUARDRAILS: Kewajiban Mutlak: Anda HANYA diizinkan menjawab pertanyaan se
         return response()->json([
             'status' => 'success',
             'data' => $history
+        ], 200);
+    }
+
+    /**
+     * API: Mengambil riwayat chat berdasarkan ID scan
+     */
+    public function getChatHistory(Request $request, $scanId)
+    {
+        $userId = Auth::guard('sanctum')->id();
+
+        // Pastikan scan ini memang milik user yang terautentikasi
+        $scan = PlantHealthScan::where('id', $scanId)
+            ->where('user_id', $userId)
+            ->first();
+
+        if (!$scan) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Laporan diagnosis tidak ditemukan.'
+            ], 404);
+        }
+
+        $chats = ChatHistory::where('plant_health_scan_id', $scanId)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $chats
         ], 200);
     }
 }
