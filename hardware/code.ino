@@ -1,5 +1,6 @@
 #include "DHT.h"
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <time.h>
 #include <PubSubClient.h>
 #include <WiFiManager.h>
@@ -14,7 +15,7 @@
 DHT dht(DHTPIN, DHTTYPE);
 
 // === KONFIGURASI LARAVEL (API) ===
-String serverName = "https://unjoyfully-decrepit-dian.ngrok-free.dev/api/simpan-notif";
+String serverName = "https://agrosquad.up.railway.app/api/simpan-notif";
 
 // === MQTT ===
 const char* mqtt_server = "broker.emqx.io"; 
@@ -247,26 +248,32 @@ void kontrolPompa(bool nyala, int durasi, String pemicu) {
 // ================= HTTP REQUEST KE LARAVEL =================
 void laporKeLaravel(String pesan) {
   if(WiFi.status() == WL_CONNECTED){
-    HTTPClient http;
-    
-    // Mulai koneksi ke URL Ngrok
-    http.begin(serverName);
-    http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-    
-    // Kirim Data POST (message=....)
-    String httpRequestData = "message=" + pesan;
-    
-    Serial.print("Melapor ke Laravel: ");
-    int httpResponseCode = http.POST(httpRequestData);
-    
-    if (httpResponseCode > 0) {
-      Serial.print("SUKSES! Code: ");
-      Serial.println(httpResponseCode);
-    } else {
-      Serial.print("GAGAL. Error: ");
-      Serial.println(httpResponseCode);
+    WiFiClientSecure *secureClient = new WiFiClientSecure;
+    if(secureClient) {
+      secureClient->setInsecure(); // Mengabaikan verifikasi sertifikat SSL untuk Railway
+      
+      HTTPClient http;
+      
+      // Mulai koneksi ke URL Railway menggunakan secureClient
+      http.begin(*secureClient, serverName);
+      http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+      
+      // Kirim Data POST (message=....)
+      String httpRequestData = "message=" + pesan;
+      
+      Serial.print("Melapor ke Laravel: ");
+      int httpResponseCode = http.POST(httpRequestData);
+      
+      if (httpResponseCode > 0) {
+        Serial.print("SUKSES! Code: ");
+        Serial.println(httpResponseCode);
+      } else {
+        Serial.print("GAGAL. Error: ");
+        Serial.println(http.errorToString(httpResponseCode).c_str());
+      }
+      http.end();
+      delete secureClient;
     }
-    http.end();
   } else {
     Serial.println("WiFi Putus, tidak bisa lapor.");
   }

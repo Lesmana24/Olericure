@@ -564,6 +564,37 @@ h1 {
     min-width: 80px;
 }
 
+/* Input yang menggantikan span agar bisa diketik */
+#modalValue {
+    width: 100%;
+    max-width: 120px;
+    font-size: 48px;
+    font-weight: bold;
+    color: #45842E;
+    text-align: center;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    -moz-appearance: textfield; /* Hilangkan spinner Firefox */
+    transition: border-color 0.3s ease;
+    caret-color: #45842E;
+}
+
+/* Hilangkan spinner Chrome/Safari */
+#modalValue::-webkit-outer-spin-button,
+#modalValue::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Efek fokus: garis bawah hijau muncul */
+#modalValue:focus {
+    border-bottom-color: #45842E;
+}
+
 .unit-dot {
     width: 10px;
     height: 10px;
