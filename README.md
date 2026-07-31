@@ -23,7 +23,7 @@ Sistem OLERICURE dikembangkan secara terintegrasi dalam beberapa komponen reposi
 * 🌐 **Live Website Production:**  
   [`https://agrosquad.page.gd`](https://agrosquad.page.gd)
 * 💻 **Web Server & Backend REST API Repository (Repo Ini):**  
-  [`https://github.com/Lesmana24/Proyek3-Website`](https://github.com/Lesmana24/Proyek3-Website) *(Saran Rename: `olericure-web`)*
+  [`https://github.com/Lesmana24/Olericure`](https://github.com/Lesmana24/Olericure)
 * 📱 **Aplikasi Mobile Repository (Flutter App):**  
   [`https://github.com/Lesmana24/Proyek3-Mobile/tree/main`](https://github.com/Lesmana24/Proyek3-Mobile/tree/main) *(Saran Rename: `olericure-mobile`)*
 * 🧠 **AI Diagnostics Microservice (FastAPI on Hugging Face):**  
@@ -180,8 +180,8 @@ flowchart TD
 
 1. **Clone Repository:**
    ```bash
-   git clone https://github.com/Lesmana24/Proyek3-Website.git
-   cd Proyek3-Website
+   git clone https://github.com/Lesmana24/Olericure.git
+   cd Olericure
    ```
 
 2. **Install Dependensi Backend & Frontend:**
