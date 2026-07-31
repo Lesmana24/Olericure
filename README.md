@@ -1,4 +1,4 @@
-# 🌱 AgroSquad - Kebun Pintar & AI Plant Doctor (IoT & AI Smart Garden)
+# 🌿 OLERICURE: Sistem Irigasi Presisi Berbasis IoT Hibrida & Diagnosis Patogen Daun Olerikultura Menggunakan Cloud-Based Inference MobileNetV2 Terintegrasi Large Language Model
 
 [![Laravel](https://img.shields.io/badge/Laravel-12.0-FF2D20?style=for-the-badge&logo=laravel)](https://laravel.com)
 [![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=for-the-badge&logo=php)](https://php.net)
@@ -6,26 +6,26 @@
 [![Flutter](https://img.shields.io/badge/Mobile-Flutter-02569B?style=for-the-badge&logo=flutter)](https://flutter.dev)
 [![Live Demo](https://img.shields.io/badge/Demo-agrosquad.page.gd-00C7B7?style=for-the-badge&logo=googlechrome)](https://agrosquad.page.gd)
 [![MQTT](https://img.shields.io/badge/Protocol-MQTT-660066?style=for-the-badge&logo=eclipse-mosquitto)](https://mqtt.org)
-[![Hugging Face](https://img.shields.io/badge/AI--Vision-Hugging%20Face-FFD21E?style=for-the-badge&logo=huggingface)](https://huggingface.co)
+[![Hugging Face](https://img.shields.io/badge/AI--Vision-MobileNetV2-FFD21E?style=for-the-badge&logo=huggingface)](https://huggingface.co)
 [![Groq](https://img.shields.io/badge/AI--LLM-Groq%20Llama%203-F34B21?style=for-the-badge)](https://groq.com)
 [![Status](https://img.shields.io/badge/Status-Completed-success?style=for-the-badge)](#)
 
-**AgroSquad (Kebun Pintar Jondol Tani)** adalah ekosistem pintar berbasis *Internet of Things* (IoT) dan *Artificial Intelligence* (AI) yang dirancang untuk memantau kesehatan lingkungan tanaman secara *real-time*, melakukan penyiraman otomatis cerdas, serta mendiagnosis penyakit tanaman secara otomatis menggunakan *Computer Vision* dan AI *Botanist Chatbot*.
+**OLERICURE** adalah sistem cerdas hibrida berbasis *Internet of Things* (IoT) dan *Artificial Intelligence* (AI) yang dirancang khusus untuk pertanian olerikultura (budidaya tanaman hortikultura/sayuran). Sistem ini mengintegrasikan pengairan/irigasi presisi otomatis berbasis telemetri sensor dengan diagnosa penyakit daun secara *cloud-based inference* menggunakan arsitektur **MobileNetV2** serta rekomendasi perawatan tergeneratif menggunakan **Large Language Model (Groq Llama 3)**.
 
-Sistem ini terdiri dari **Laravel 12 Web & REST API Backend**, mikrokontroler **ESP32 IoT Node**, model AI **Hugging Face (FastAPI)** + **Groq Llama 3**, serta **Aplikasi Mobile (Flutter)**.
+Ekosistem ini mencakup **Laravel 12 Web & REST API Backend**, mikrokontroler **ESP32 IoT Node**, model AI **Hugging Face (FastAPI)** + **Groq Llama 3**, serta **Aplikasi Mobile (Flutter)**.
 
 ---
 
 ## 🔗 Ekosistem Repository & Link Terkait
 
-Sistem AgroSquad dikembangkan secara terintegrasi dalam beberapa komponen repository dan tautan server:
+Sistem OLERICURE dikembangkan secara terintegrasi dalam beberapa komponen repository dan tautan server:
 
 * 🌐 **Live Website Production:**  
   [`https://agrosquad.page.gd`](https://agrosquad.page.gd)
 * 💻 **Web Server & Backend REST API Repository (Repo Ini):**  
-  [`https://github.com/Lesmana24/Proyek3-Website`](https://github.com/Lesmana24/Proyek3-Website)
+  [`https://github.com/Lesmana24/Proyek3-Website`](https://github.com/Lesmana24/Proyek3-Website) *(Saran Rename: `olericure-web`)*
 * 📱 **Aplikasi Mobile Repository (Flutter App):**  
-  [`https://github.com/Lesmana24/Proyek3-Mobile/tree/main`](https://github.com/Lesmana24/Proyek3-Mobile/tree/main)
+  [`https://github.com/Lesmana24/Proyek3-Mobile/tree/main`](https://github.com/Lesmana24/Proyek3-Mobile/tree/main) *(Saran Rename: `olericure-mobile`)*
 * 🧠 **AI Diagnostics Microservice (FastAPI on Hugging Face):**  
   [`https://lesmana24-agrosquad-ai.hf.space/diagnosa`](https://lesmana24-agrosquad-ai.hf.space/diagnosa)
 
@@ -34,18 +34,20 @@ Sistem AgroSquad dikembangkan secara terintegrasi dalam beberapa komponen reposi
 ## 📸 Antarmuka & Dokumentasi Visual
 
 ### 1. Dashboard Monitoring Real-Time
-Memantau telemetry suhu, kelembapan tanah/udara, status perangkat (Online/Offline), serta kontrol tombol penyiraman manual.
-![Dashboard Online](screenshots/dashboard.png)
+Memantau telemetri suhu (°C), kelembapan (%), status koneksi alat (Online/Offline), serta kontrol tombol penyiraman manual.
+![Dashboard Real-Time](screenshots/dashboard.png)
 
-### 2. Implementasi Perangkat Keras (IoT Node)
-Rangkaian ESP32 DevKit V1, Sensor DHT22, Modul Relay 1-Channel, dan Buzzer alarm dalam wadah pelindung outdoor.
-![Hardware Rangkaian](screenshots/hardware.png)
+### 2. Diagnosis Patogen Daun & AI Care Guide (MobileNetV2 + LLM)
+Hasil pemindaian kesehatan daun olerikultura berbasis arsitektur MobileNetV2, tingkat akurasi (confidence score), serta panduan perawatan tergeneratif berbasis Groq Llama 3 LLM.
+![Diagnosis AI & Plant Care](screenshots/diagnosis.png)
 
-### 3. Kontrol Ambang Batas (Threshold) & Riwayat Notifikasi
-Pengaturan ambang batas suhu dan kelembapan dinamis yang disinkronkan ke hardware via MQTT, serta log riwayat aktivitas penyiraman.
-| Modal Pengaturan Ambang Batas | Riwayat Penyiraman & Notifikasi |
-|:-----------------------:|:--------------------:|
-| ![Modal Setting](screenshots/suhu.png) | ![Riwayat Notif](screenshots/notif.png) |
+### 3. Implementasi Perangkat Keras (IoT Node)
+Rangkaian mikrokontroler ESP32 DevKit V1, sensor DHT22, modul relay 1-channel, dan alarm buzzer dalam wadah pelindung outdoor.
+![Implementasi Hardware ESP32](screenshots/hardware.png)
+
+### 4. Riwayat Penyiraman & Notifikasi Sistem
+Log riwayat aktivitas penyiraman otomatis (pemicu sensor vs pemicu jadwal mingguan) serta notifikasi peringatan status perangkat.
+![Riwayat Notifikasi System](screenshots/notif.png)
 
 ---
 
@@ -76,7 +78,7 @@ flowchart TD
     end
 
     subgraph AI_Services ["Layanan Artificial Intelligence"]
-        HF["FastAPI (Hugging Face Space)\nCV Disease Classifier"]
+        HF["FastAPI (Hugging Face Space)\nMobileNetV2 Disease Classifier"]
         GROQ["Groq API (Llama 3)\nCare Recommendation & Botanist Chat"]
     end
 
@@ -118,10 +120,10 @@ flowchart TD
 * **Settings & Telemetry API:** Endpoint sinkronisasi pengaturan ambang batas dan status sensor untuk aplikasi mobile (`/api/settings`, `/api/update-setting`).
 * **AI Scan & Chat API:** Mendukung pengambilan foto dari kamera HP untuk pemindaian penyakit tanaman dan percakapan AI (*Botanist Chatbot*) secara langsung dari mobile app (`/api/ai/upload`, `/api/mobile-chat`, `/api/ai/history`).
 
-### 🧠 3. Pemindai Tanaman AI & Chat Botanist
-* **AI Computer Vision Classifier:** Mengunggah gambar daun/tanaman ke mikroservis FastAPI Hugging Face (`lesmana24-agrosquad-ai.hf.space`) untuk mengidentifikasi jenis tanaman, nama penyakit, dan tingkat akurasi (*confidence score*).
+### 🧠 3. Pemindai Tanaman AI (MobileNetV2) & Chat Botanist (LLM)
+* **MobileNetV2 Computer Vision Classifier:** Mengunggah gambar daun/tanaman ke mikroservis FastAPI Hugging Face (`lesmana24-agrosquad-ai.hf.space`) berbasis arsitektur **MobileNetV2** untuk mengidentifikasi patogen/penyakit daun olerikultura dengan tingkat akurasi tinggi.
 * **Generative Plant Care Guide (Groq Llama 3):** Menghasilkan panduan perawatan yang disesuaikan secara dinamis meliputi kebutuhan cahaya, penyiraman, kisaran suhu ideal, serta daftar solusi penanganan masalah.
-* **Interactive Botanist Chatbot:** Fitur konsultasi interaktif berbasis AI yang siap menjawab pertanyaan spesifik pengguna mengenai kesehatan tanaman.
+* **Interactive Botanist Chatbot:** Fitur konsultasi interaktif berbasis LLM yang siap menjawab pertanyaan spesifik pengguna mengenai kesehatan tanaman.
 
 ### 🤖 4. Logika Firmware Hardware (ESP32)
 * **Compound Condition Logic:** Penyiraman otomatis diaktifkan hanya jika kondisi kritis terpenuhi (**Suhu > Threshold** DAN **Kelembapan < Threshold**).
@@ -141,7 +143,7 @@ flowchart TD
 | **API Auth** | Laravel Sanctum |
 | **Database** | MySQL 8.0 / MariaDB 10.4+ |
 | **Frontend Web** | Blade, Tailwind CSS, Vite, Flowbite / Alpine.js |
-| **AI Computer Vision** | Python FastAPI, PyTorch (Hugging Face Space) |
+| **AI Computer Vision** | MobileNetV2 Architecture, Python FastAPI, PyTorch (Hugging Face Space) |
 | **AI Generative / LLM** | Groq API (Llama-3-70b/8b) |
 | **IoT Protocol** | MQTT (PubSubClient), HTTP/HTTPS REST API |
 | **Mobile App** | Flutter (Dart) |
@@ -262,7 +264,7 @@ flowchart TD
 | `GET` | `/api/notifications` | Sanctum | Mengambil daftar notifikasi penyiraman |
 | `DELETE`| `/api/notifications/clear` | Sanctum | Menghapus seluruh riwayat notifikasi |
 | `POST` | `/api/ai/upload` | Sanctum | Mengunggah foto tanaman & proses diagnosa AI |
-| `POST` | `/api/ai/store` | Sanctum | Menyimpan hasil diagnosa AI ke riwayat |
+| `POST` | `/api/store` | Sanctum | Menyimpan hasil diagnosa AI ke riwayat |
 | `POST` | `/api/mobile-chat` | Sanctum | Percakapan interaktif dengan AI Botanist |
 | `GET` | `/api/ai/history` | Sanctum | Mengambil daftar riwayat hasil diagnosa tanaman |
 | `DELETE`| `/api/ai/history/{id}`| Sanctum | Menghapus entri riwayat diagnosa tanaman |
