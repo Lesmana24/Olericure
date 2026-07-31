@@ -1,150 +1,290 @@
-# 🌱 Kebun Pintar - Jondol Tani Lelea (IoT Smart Garden)
+# 🌱 AgroSquad - Kebun Pintar & AI Plant Doctor (IoT & AI Smart Garden)
 
-![Laravel](https://img.shields.io/badge/Laravel-12.0-FF2D20?style=for-the-badge&logo=laravel)
-![ESP32](https://img.shields.io/badge/Hardware-ESP32-00979D?style=for-the-badge&logo=espressif)
-![Status](https://img.shields.io/badge/Status-Completed-success?style=for-the-badge)
+[![Laravel](https://img.shields.io/badge/Laravel-12.0-FF2D20?style=for-the-badge&logo=laravel)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=for-the-badge&logo=php)](https://php.net)
+[![ESP32](https://img.shields.io/badge/Hardware-ESP32-00979D?style=for-the-badge&logo=espressif)](https://espressif.com)
+[![Flutter](https://img.shields.io/badge/Mobile-Flutter-02569B?style=for-the-badge&logo=flutter)](https://flutter.dev)
+[![Live Demo](https://img.shields.io/badge/Demo-agrosquad.page.gd-00C7B7?style=for-the-badge&logo=googlechrome)](https://agrosquad.page.gd)
+[![MQTT](https://img.shields.io/badge/Protocol-MQTT-660066?style=for-the-badge&logo=eclipse-mosquitto)](https://mqtt.org)
+[![Hugging Face](https://img.shields.io/badge/AI--Vision-Hugging%20Face-FFD21E?style=for-the-badge&logo=huggingface)](https://huggingface.co)
+[![Groq](https://img.shields.io/badge/AI--LLM-Groq%20Llama%203-F34B21?style=for-the-badge)](https://groq.com)
+[![Status](https://img.shields.io/badge/Status-Completed-success?style=for-the-badge)](#)
 
-**Kebun Pintar Jondol Tani** adalah sistem monitoring dan penyiraman otomatis berbasis *Internet of Things* (IoT). Proyek ini dikembangkan untuk memantau kondisi lingkungan tanaman (Suhu & Kelembapan) secara *real-time* serta mengendalikan pompa air berdasarkan logika sensor atau jadwal yang ditentukan.
+**AgroSquad (Kebun Pintar Jondol Tani)** adalah ekosistem pintar berbasis *Internet of Things* (IoT) dan *Artificial Intelligence* (AI) yang dirancang untuk memantau kesehatan lingkungan tanaman secara *real-time*, melakukan penyiraman otomatis cerdas, serta mendiagnosis penyakit tanaman secara otomatis menggunakan *Computer Vision* dan AI *Botanist Chatbot*.
 
-Dibangun menggunakan **Laravel 12** sebagai antarmuka web dan mikrokontroler **ESP32** sebagai pengendali perangkat keras.
+Sistem ini terdiri dari **Laravel 12 Web & REST API Backend**, mikrokontroler **ESP32 IoT Node**, model AI **Hugging Face (FastAPI)** + **Groq Llama 3**, serta **Aplikasi Mobile (Flutter)**.
 
 ---
 
-## 📸 Antarmuka & Dokumentasi
+## 🔗 Ekosistem Repository & Link Terkait
 
-### 1. Dashboard Monitoring
-Memantau kondisi tanaman secara real-time dengan indikator status perangkat (Online/Offline).
+Sistem AgroSquad dikembangkan secara terintegrasi dalam beberapa komponen repository dan tautan server:
+
+* 🌐 **Live Website Production:**  
+  [`https://agrosquad.page.gd`](https://agrosquad.page.gd)
+* 💻 **Web Server & Backend REST API Repository (Repo Ini):**  
+  [`https://github.com/Lesmana24/Proyek3-Website`](https://github.com/Lesmana24/Proyek3-Website)
+* 📱 **Aplikasi Mobile Repository (Flutter App):**  
+  [`https://github.com/Lesmana24/Proyek3-Mobile/tree/main`](https://github.com/Lesmana24/Proyek3-Mobile/tree/main)
+* 🧠 **AI Diagnostics Microservice (FastAPI on Hugging Face):**  
+  [`https://lesmana24-agrosquad-ai.hf.space/diagnosa`](https://lesmana24-agrosquad-ai.hf.space/diagnosa)
+
+---
+
+## 📸 Antarmuka & Dokumentasi Visual
+
+### 1. Dashboard Monitoring Real-Time
+Memantau telemetry suhu, kelembapan tanah/udara, status perangkat (Online/Offline), serta kontrol tombol penyiraman manual.
 ![Dashboard Online](screenshots/dashboard.png)
 
-### 2. Implementasi Hardware
-Rangkaian ESP32, Sensor DHT22, Relay, dan Pompa dalam wadah proteksi.
+### 2. Implementasi Perangkat Keras (IoT Node)
+Rangkaian ESP32 DevKit V1, Sensor DHT22, Modul Relay 1-Channel, dan Buzzer alarm dalam wadah pelindung outdoor.
 ![Hardware Rangkaian](screenshots/hardware.png)
 
-### 3. Fitur Kontrol & Notifikasi
-Pengaturan ambang batas (*threshold*), jadwal mingguan, dan riwayat penyiraman.
-| Modal Setting Threshold | Notifikasi & Riwayat |
+### 3. Kontrol Ambang Batas (Threshold) & Riwayat Notifikasi
+Pengaturan ambang batas suhu dan kelembapan dinamis yang disinkronkan ke hardware via MQTT, serta log riwayat aktivitas penyiraman.
+| Modal Pengaturan Ambang Batas | Riwayat Penyiraman & Notifikasi |
 |:-----------------------:|:--------------------:|
 | ![Modal Setting](screenshots/suhu.png) | ![Riwayat Notif](screenshots/notif.png) |
 
 ---
 
-## 🔥 Fitur Utama
+## 🏗️ Arsitektur Sistem & Alur Data
 
-### 🌐 Web System (Laravel 12)
-- **Real-time Monitoring:** Data suhu dan kelembapan diperbarui setiap detik via protokol MQTT/HTTP.
-- **Auto-Detection Status:** Sistem mendeteksi otomatis jika alat mati/putus koneksi (Indikator Offline).
-- **Flexible Threshold:** Pengguna bisa mengubah batas pemicu (Suhu Panas / Tanah Kering) langsung dari web tanpa coding ulang.
-- **Smart Scheduling:** Jadwal penyiraman otomatis berbasis hari dan jam.
-- **Log History:** Mencatat setiap aktivitas penyiraman beserta pemicunya (Sensor/Jadwal) dengan fitur *Reset Data*.
+```mermaid
+flowchart TD
+    subgraph IoT_Hardware ["Perangkat Keras (ESP32 Node)"]
+        ESP32["ESP32 DevKit V1"]
+        DHT["Sensor DHT22 (GPIO 26)"]
+        RELAY["Relay Pompa Air (GPIO 14)"]
+        BUZZER["Buzzer Alarm (GPIO 25)"]
+        DHT -->|Suhu & Lembab| ESP32
+        ESP32 -->|Trigger| RELAY
+        ESP32 -->|Alert| BUZZER
+    end
 
-### 🤖 Hardware Logic (ESP32)
-- **Compound Logic:** Penyiraman otomatis hanya terjadi jika kondisi Kritis (**Suhu > Batas** DAN **Lembab < Batas**).
-- **State Memory:** Mengingat penyebab penyiraman terakhir untuk pelaporan data yang akurat.
-- **Fail-Safe Timer:** Proteksi durasi penyiraman agar pompa tidak menyala terus-menerus.
-- **Local Alert:** Buzzer berbunyi saat penyiraman aktif sebagai indikator fisik.
+    subgraph Messaging ["MQTT Broker & Protocols"]
+        MQTT["EMQX MQTT Broker (broker.emqx.io:1883)"]
+    end
 
----
+    subgraph Backend ["Laravel 12 Backend & Web Server"]
+        WEB["Laravel Web Dashboard\n(agrosquad.page.gd)"]
+        API["Laravel Sanctum REST API"]
+        DB[(MySQL / MariaDB)]
+        WEB --- DB
+        API --- DB
+    end
 
-## 🛠️ Spesifikasi Teknis
+    subgraph AI_Services ["Layanan Artificial Intelligence"]
+        HF["FastAPI (Hugging Face Space)\nCV Disease Classifier"]
+        GROQ["Groq API (Llama 3)\nCare Recommendation & Botanist Chat"]
+    end
 
-### Perangkat Lunak (*Software Stack*)
-- **Framework:** Laravel 12 (PHP 8.2+)
-- **Database:** MySQL / MariaDB
-- **Frontend:** Blade Templating, Tailwind CSS, Vite
-- **Server:** Apache/Nginx (Support Hosting aaPanel/cPanel)
+    subgraph Mobile ["Aplikasi Mobile"]
+        FLUTTER["Flutter Mobile App"]
+    end
 
-### Perangkat Keras (*Hardware Pinout*)
-Mapping pin pada **ESP32 DevKit V1**:
+    %% Flow Connections
+    ESP32 -->|Publish Telemetri & Status| MQTT
+    MQTT -->|Subscribe Telemetri & Telecommand| WEB
+    ESP32 -->|HTTP POST Log Activity| API
+    
+    WEB -->|Upload Foto Tanaman| HF
+    API -->|Upload Foto Tanaman| HF
+    HF -->|Hasil Diagnosa & Conf Score| WEB
+    HF -->|Hasil Diagnosa & Conf Score| API
+    
+    WEB -->|Prompt Diagnosis| GROQ
+    API -->|Prompt Diagnosis| GROQ
+    GROQ -->|Panduan Perawatan & Chat Bot| WEB
+    GROQ -->|Panduan Perawatan & Chat Bot| API
 
-| Komponen | Tipe | Pin GPIO | Keterangan |
-| :--- | :--- | :--- | :--- |
-| **DHT22** | Input | `GPIO 26` | Sensor Suhu & Kelembapan |
-| **Relay Module** | Output | `GPIO 14` | Trigger Pompa Air (Active Low) |
-| **Buzzer** | Output | `GPIO 25` | Alarm Notifikasi |
-
----
-
-## 🚀 Cara Instalasi (Web Server)
-
-Ikuti langkah ini untuk menjalankan server lokal:
-
-1. **Clone Repository**
-   ```bash
-   git clone https://github.com/Lesmana24/Proyek2
-   cd kebun-pintar-jondol
-   ```
-
-2. **Install Dependencies**
-    ```bash
-    composer install
-    npm install
-    ```
-
-3. **Konfigurasi Environment Salin file .env dan sesuaikan database.**
-    ```bash
-    cp .env.example .env
-    php artisan key:generate
-    ```
-Edit .env bagian DB_DATABASE, DB_USERNAME, DB_PASSWORD.
-
-4. **Build Assets**
-    ```bash
-    npm run build
-    ```
-
-5. **Migrasi Database**
-    ```bash
-    php artisan migrate
-    ```
-
-6. **Jalankan Server**
-    ```bash
-    php artisan serve
-    ```
-Akses di: http://localhost:8000
-
----
-
-## 🔌 Implementasi Hardware (ESP32 Firmware)
-
-Kode sumber lengkap (Full Code) dapat dilihat di folder [`/hardware`](./hardware).
-
-### ✨ Fitur Unggulan Firmware
-1.  **Dynamic WiFi Connect (`WiFiManager`):** Tidak perlu *hardcode* SSID/Password di kodingan. Jika gagal konek, alat akan membuat Hotspot untuk konfigurasi ulang via HP.
-2.  **OTA Control (MQTT):** Menerima perintah *threshold* dan jadwal baru secara *real-time* tanpa restart.
-3.  **Fail-Safe Logic:** Sistem proteksi pompa otomatis mati jika koneksi terputus atau timer habis.
-4.  **Dual Protocol:** Menggunakan **MQTT** untuk kontrol cepat dan **HTTP POST** untuk pelaporan data ke Laravel.
-
-### ⚙️ Konfigurasi Awal
-Sebelum upload, pastikan Library berikut terinstall di Arduino IDE:
-- `WiFiManager` by tzapu
-- `PubSubClient` (MQTT)
-- `DHT sensor library`
-- `Adafruit Unified Sensor`
-
-### 📝 Snippet Konfigurasi
-Sesuaikan variabel server di file `.ino` jika menggunakan hosting berbeda:
-
-```cpp
-// === KONFIGURASI API LARAVEL ===
-// Ganti dengan domain hosting kamu
-String serverName = "[https://proyek1d2.proyek.jti.polindra.ac.id/api/simpan-notif](https://proyek1d2.proyek.jti.polindra.ac.id/api/simpan-notif)";
-
-// === MQTT BROKER ===
-const char* mqtt_server = "broker.emqx.io";
+    FLUTTER -->|HTTP REST API / Sanctum Auth| API
 ```
 
-🚀 Cara Setting WiFi Pertama Kali (Tanpa Coding)
-1. Karena menggunakan WiFiManager, saat alat pertama kali dinyalakan di tempat baru:
-2. Alat akan menyebarkan Hotspot bernama IoT-Penyiraman-Config.
-3. Konek ke WiFi tersebut menggunakan HP/Laptop.
-4. Otomatis akan muncul halaman "Configure WiFi".
-5. Pilih WiFi yang tersedia (misal: WiFi Kampus/Rumah) dan masukkan Password.
-6. Klik Save, alat akan restart dan otomatis terhubung.
-7. Untuk mereset WiFi: Tekan tombol BOOT (Pin 0) pada ESP32.
+---
 
-👨‍💻 Pengembang
-Lesmana Adhi Kusuma
-Mahasiswa D3 Teknik Informatika - Politeknik Negeri Indramayu (Polindra)
+## 🔥 Fitur Utama System
 
-Mata Kuliah Proyek 2: Implementasi Laravel dan Integrasi dengan IoT
+### 🌐 1. Dashboard Web & Backend (Laravel 12)
+* **Real-time Telemetry:** Dashboard interaktif memantau data suhu (°C) dan kelembapan (%) secara *live*.
+* **Status Perangkat Otomatis:** Deteksi otomatis jika perangkat ESP32 mati atau terputus koneksi (Indikator Online/Offline).
+* **Kontrol Threshold Dinamis:** Pengguna dapat menyesuaikan batas pemicu penyiraman (Suhu Tinggi & Kelembapan Kering) langsung dari Web/Mobile tanpa perlu *re-flash* firmware ESP32.
+* **Smart Scheduling:** Jadwal penyiraman otomatis berdasarkan kombinasi hari (Senin-Minggu) dan jam tertentu.
+* **Log History & Analytics:** Catatan lengkap aktivitas penyiraman (pemicu sensor vs pemicu jadwal) dengan opsi pembersihan/reset log.
+
+### 📱 2. Integrasi Mobile App (Laravel Sanctum REST API)
+* **Authentication API:** Endpoint Register & Login berbasis Token Sanctum yang aman (`/api/register`, `/api/login`, `/api/logout`).
+* **Settings & Telemetry API:** Endpoint sinkronisasi pengaturan ambang batas dan status sensor untuk aplikasi mobile (`/api/settings`, `/api/update-setting`).
+* **AI Scan & Chat API:** Mendukung pengambilan foto dari kamera HP untuk pemindaian penyakit tanaman dan percakapan AI (*Botanist Chatbot*) secara langsung dari mobile app (`/api/ai/upload`, `/api/mobile-chat`, `/api/ai/history`).
+
+### 🧠 3. Pemindai Tanaman AI & Chat Botanist
+* **AI Computer Vision Classifier:** Mengunggah gambar daun/tanaman ke mikroservis FastAPI Hugging Face (`lesmana24-agrosquad-ai.hf.space`) untuk mengidentifikasi jenis tanaman, nama penyakit, dan tingkat akurasi (*confidence score*).
+* **Generative Plant Care Guide (Groq Llama 3):** Menghasilkan panduan perawatan yang disesuaikan secara dinamis meliputi kebutuhan cahaya, penyiraman, kisaran suhu ideal, serta daftar solusi penanganan masalah.
+* **Interactive Botanist Chatbot:** Fitur konsultasi interaktif berbasis AI yang siap menjawab pertanyaan spesifik pengguna mengenai kesehatan tanaman.
+
+### 🤖 4. Logika Firmware Hardware (ESP32)
+* **Compound Condition Logic:** Penyiraman otomatis diaktifkan hanya jika kondisi kritis terpenuhi (**Suhu > Threshold** DAN **Kelembapan < Threshold**).
+* **Dynamic WiFi Config (`WiFiManager`):** Pengaturan koneksi WiFi tanpa *hardcode*. Jika koneksi terputus, ESP32 menyediakan Captive Portal AP (`IoT-Penyiraman-Config`) untuk konfigurasi via Smartphone.
+* **MQTT Telecommand & OTA Update:** Menerima perintah *threshold* dan perubahan jadwal secara *real-time* via broker EMQX.
+* **Fail-Safe Protection:** Timer pengaman otomatis mematikan relay pompa untuk mencegah kebocoran atau kerusakan akibat pompa menyala tanpa henti.
+
+---
+
+## 🛠️ Spesifikasi Teknis & Mapping Pinout
+
+### Software Stack
+| Layer | Teknologi / Library |
+| :--- | :--- |
+| **Live Production Server** | `https://agrosquad.page.gd` |
+| **Backend Framework** | Laravel 12.x (PHP 8.2+) |
+| **API Auth** | Laravel Sanctum |
+| **Database** | MySQL 8.0 / MariaDB 10.4+ |
+| **Frontend Web** | Blade, Tailwind CSS, Vite, Flowbite / Alpine.js |
+| **AI Computer Vision** | Python FastAPI, PyTorch (Hugging Face Space) |
+| **AI Generative / LLM** | Groq API (Llama-3-70b/8b) |
+| **IoT Protocol** | MQTT (PubSubClient), HTTP/HTTPS REST API |
+| **Mobile App** | Flutter (Dart) |
+
+### Pinout Hardware (ESP32 DevKit V1)
+| Komponen | Jenis | Pin GPIO | Mode / Keterangan |
+| :--- | :--- | :--- | :--- |
+| **Sensor DHT22** | Input | `GPIO 26` | Pembacaan Suhu (°C) & Kelembapan (%) |
+| **Modul Relay Pompa** | Output | `GPIO 14` | Trigger Pompa Air (*Active LOW*) |
+| **Buzzer Alarm** | Output | `GPIO 25` | Indikator Suara Saat Penyiraman Aktif |
+| **Tombol Reset WiFi** | Input | `GPIO 0` (BOOT) | Tahan saat boot untuk reset WiFiManager |
+
+### Pemetaan Topik MQTT (`broker.emqx.io:1883`)
+| Topik | Direction | Fungsi |
+| :--- | :--- | :--- |
+| `AgroSquad/monitoring/suhu` | Publish (ESP32 -> Server) | Data Telemetri Suhu Terbaru |
+| `AgroSquad/monitoring/lembab` | Publish (ESP32 -> Server) | Data Telemetri Kelembapan Terbaru |
+| `AgroSquad/outputpompa` | Publish (ESP32 -> Server) | Status Real-time Relay Pompa (ON/OFF) |
+| `AgroSquad/kontrol/batas_suhu` | Subscribe (Server -> ESP32) | Ambang Batas Pemicu Suhu |
+| `AgroSquad/kontrol/batas_lembab` | Subscribe (Server -> ESP32) | Ambang Batas Pemicu Kelembapan |
+| `AgroSquad/kontrol/jadwal_mingguan` | Subscribe (Server -> ESP32) | Konfigurasi Hari & Jam Jadwal |
+
+---
+
+## 🚀 Panduan Instalasi Web & REST API Server
+
+### Prasyarat System
+* PHP versi 8.2 atau lebih baru (dengan ekstensi `pdo_mysql`, `curl`, `mbstring`, `openssl`).
+* Composer (v2.x).
+* Node.js (v18.x atau v20.x) & NPM.
+* Server Database MySQL / MariaDB.
+
+### Langkah-langkah Instalasi
+
+1. **Clone Repository:**
+   ```bash
+   git clone https://github.com/Lesmana24/Proyek3-Website.git
+   cd Proyek3-Website
+   ```
+
+2. **Install Dependensi Backend & Frontend:**
+   ```bash
+   composer install
+   npm install
+   ```
+
+3. **Konfigurasi Environment:**
+   Salin `.env.example` menjadi `.env` dan atur kredensial database serta API key:
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+
+   *Buka file `.env` dan sesuaikan variabel berikut:*
+   ```env
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=web_proyek3
+   DB_USERNAME=root
+   DB_PASSWORD=
+
+   # API Key Groq (Untuk Fitur AI Botanist & Care Guide)
+   GROQ_API_KEY=your_groq_api_key_here
+   ```
+
+4. **Jalankan Migrasi Database:**
+   ```bash
+   php artisan migrate
+   ```
+
+5. **Build Asset Frontend:**
+   ```bash
+   npm run build
+   ```
+   *(Untuk pengembangan frontend dengan hot-reload, gunakan `npm run dev`)*
+
+6. **Jalankan Development Server:**
+   ```bash
+   php artisan serve
+   ```
+   Akses aplikasi web di peramban Anda melalui: `http://127.0.0.1:8000` (atau kunjungi server production di `https://agrosquad.page.gd`).
+
+---
+
+## 🔌 Setup Firmware Hardware (ESP32)
+
+1. Buka file firmware di [`/Hardware/code.ino`](./Hardware/code.ino) menggunakan **Arduino IDE**.
+2. Pastikan pustaka (*libraries*) berikut telah terinstall via *Library Manager*:
+   - `WiFiManager` (by tzapu)
+   - `PubSubClient` (by Nick O'Leary)
+   - `DHT sensor library` (by Adafruit)
+   - `Adafruit Unified Sensor`
+3. Sesuaikan URL API backend Laravel pada variabel `serverName` jika sudah di-deploy ke server production:
+   ```cpp
+   String serverName = "https://agrosquad.page.gd/api/simpan-notif";
+   ```
+4. Upload program ke board **ESP32 DevKit V1**.
+
+### 📱 Cara Konfigurasi WiFi Pertama Kali:
+1. Saat ESP32 dinyalakan pertama kali (atau tidak menemukan WiFi yang tersimpan), ESP32 akan masuk ke mode Access Point.
+2. Hubungkan HP/Laptop ke WiFi AP bernama: **`IoT-Penyiraman-Config`**.
+3. Halaman Captive Portal "*Configure WiFi*" akan terbuka secara otomatis.
+4. Pilih SSID WiFi lokal Anda, masukkan password, lalu simpan (*Save*).
+5. ESP32 akan restart dan terhubung otomatis ke jaringan.
+
+---
+
+## 📡 Ringkasan API Endpoints (Mobile & Hardware)
+
+| Method | Endpoint | Auth | Deskripsi |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/register` | Public | Registrasi akun baru pengguna mobile |
+| `POST` | `/api/login` | Public | Authentikasi login & generate Sanctum Bearer Token |
+| `POST` | `/api/logout` | Sanctum | Revoke token autentikasi pengguna |
+| `GET` | `/api/settings` | Sanctum | Mengambil konfigurasi ambang batas & jadwal |
+| `POST` | `/api/update-setting` | Sanctum | Memperbarui batas suhu/kelembapan via mobile |
+| `GET` | `/api/notifications` | Sanctum | Mengambil daftar notifikasi penyiraman |
+| `DELETE`| `/api/notifications/clear` | Sanctum | Menghapus seluruh riwayat notifikasi |
+| `POST` | `/api/ai/upload` | Sanctum | Mengunggah foto tanaman & proses diagnosa AI |
+| `POST` | `/api/ai/store` | Sanctum | Menyimpan hasil diagnosa AI ke riwayat |
+| `POST` | `/api/mobile-chat` | Sanctum | Percakapan interaktif dengan AI Botanist |
+| `GET` | `/api/ai/history` | Sanctum | Mengambil daftar riwayat hasil diagnosa tanaman |
+| `DELETE`| `/api/ai/history/{id}`| Sanctum | Menghapus entri riwayat diagnosa tanaman |
+| `POST` | `/api/simpan-notif` | Public/HW | Endpoint penerimaan log penyiraman dari ESP32 |
+
+---
+
+## ☁️ Catatan Deployment & Shared Hosting
+
+Aplikasi ini telah dioptimalkan untuk dapat berjalan lancar di lingkungan **Shared Hosting** (`agrosquad.page.gd` / aaPanel / InfinityFree / Railway / cPanel) tanpa memerlukan akses SSH root:
+* **Clear Cache Utility:** Akses route `/clear-cache` di browser (`https://agrosquad.page.gd/clear-cache`) untuk melakukan pembersihan cache konfigurasi dan view secara otomatis tanpa terminal.
+* **Direct Upload Storage Support:** Mendukung akses gambar via `/uploads/{path}` dan fallback `/storage/{path}` yang bekerja 100% tanpa memerlukan *symlink* `php artisan storage:link`.
+
+---
+
+## 👨‍💻 Tim Pengembang (Developers)
+
+Proyek ini dikembangkan oleh Tim Pengembang Mahasiswa D3 Teknik Informatika - **Politeknik Negeri Indramayu (Polindra)** untuk Mata Kuliah **Proyek 3**:
+
+* **Lesmana Adhi Kusuma**
+* **Genetica Deardi I**
+* **Muhammad Nurfaqiih**
+
+---
+*Distributed under the MIT License. See `LICENSE` for more information.*
