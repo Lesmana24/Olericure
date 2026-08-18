@@ -2,40 +2,35 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Notification;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
+/**
+ * Controller khusus melayani antarmuka Web Blade Dashboard.
+ */
 class NotificationController extends Controller
 {
-    // 1. Tampilkan Halaman Notifikasi (Web)
-    public function index()
+    /**
+     * 1. Tampilkan Halaman Notifikasi (Web Dashboard).
+     */
+    public function index(): View
     {
-        // Ambil data terbaru paling atas
-        $notifications = Notification::orderBy('created_at', 'desc')->get();
+        $notifications = Notification::latest('created_at')->get();
 
         return view('konten.notification', [
             'title' => 'Notifikasi',
-            'notifications' => $notifications
+            'notifications' => $notifications,
         ]);
     }
 
-    // 2. Simpan Data dari ESP32 (API)
-    public function storeLog(Request $request)
+    /**
+     * 2. Hapus Semua Notifikasi (Web Action).
+     */
+    public function deleteAll(): RedirectResponse
     {
-        Notification::create([
-            'message' => $request->message ?? 'Penyiraman selesai secara otomatis.'
-        ]);
+        Notification::query()->delete();
 
-        return response()->json(['status' => 'success']);
-    }
-
-    // 3. Hapus Semua Notifikasi
-    public function deleteAll()
-    {
-        // Menghapus semua isi tabel notifications sampai bersih
-        Notification::truncate();
-
-        // Kembali ke halaman notifikasi
-        return redirect()->back();
+        return redirect()->back()->with('success', 'Semua notifikasi berhasil dihapus.');
     }
 }

@@ -4,7 +4,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\NotificationApiController;
-use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PlantScanController;
 
 // Jalur Bebas (Nggak butuh token)
@@ -29,4 +28,4 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/ai/chats/{scanId}', [PlantScanController::class, 'getChatHistory']);
 
 });
-Route::post('/simpan-notif', [NotificationController::class, 'storeLog']);
+Route::post('/simpan-notif', [NotificationApiController::class, 'storeLog']);
