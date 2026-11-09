@@ -25,7 +25,7 @@ Sistem OLERICURE dikembangkan secara terintegrasi dalam beberapa komponen reposi
 * 💻 **Web Server & Backend REST API Repository (Repo Ini):**  
   [`https://github.com/Lesmana24/Olericure`](https://github.com/Lesmana24/Olericure)
 * 📱 **Aplikasi Mobile Repository (Flutter App):**  
-  [`https://github.com/Lesmana24/Proyek3-Mobile/tree/main`](https://github.com/Lesmana24/Proyek3-Mobile/tree/main) *(Saran Rename: `olericure-mobile`)*
+  [`https://github.com/Lesmana24/Olericure-Mobile`](https://github.com/Lesmana24/Olericure-Mobile)
 * 🧠 **AI Diagnostics Microservice (FastAPI on Hugging Face):**  
   [`https://lesmana24-agrosquad-ai.hf.space/diagnosa`](https://lesmana24-agrosquad-ai.hf.space/diagnosa)
 
