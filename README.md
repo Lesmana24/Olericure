@@ -43,6 +43,7 @@ Hasil pemindaian kesehatan daun olerikultura berbasis arsitektur MobileNetV2, ti
 
 ### 3. Implementasi Perangkat Keras (IoT Node)
 Rangkaian mikrokontroler ESP32 DevKit V1, sensor DHT22, modul relay 1-channel, dan alarm buzzer dalam wadah pelindung outdoor.
+
 ![Implementasi Hardware ESP32](screenshots/hardware.png)
 
 ### 4. Riwayat Penyiraman & Notifikasi Sistem
